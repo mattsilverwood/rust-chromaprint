@@ -5,44 +5,49 @@ use std::{mem, ptr, slice};
 
 pub type ChromaprintContext = *mut ::libc::c_void;
 pub type ChromaprintAlgorithm = ::libc::c_int;
-pub const CHROMAPRINT_ALGORITHM_TEST1: ChromaprintAlgorithm = 0;
-pub const CHROMAPRINT_ALGORITHM_TEST2: ChromaprintAlgorithm = 1;
-pub const CHROMAPRINT_ALGORITHM_TEST3: ChromaprintAlgorithm = 2;
-pub const CHROMAPRINT_ALGORITHM_TEST4: ChromaprintAlgorithm = 3;
-pub const CHROMAPRINT_ALGORITHM_DEFAULT: ChromaprintAlgorithm = CHROMAPRINT_ALGORITHM_TEST2;
+
+const CHROMAPRINT_ALGORITHM_DEFAULT: ChromaprintAlgorithm = 1;
 
 #[link(name = "chromaprint")]
-extern "C" {
-    pub fn chromaprint_get_version() -> *const ::libc::c_char;
-    pub fn chromaprint_new(algorithm: ChromaprintAlgorithm) -> *mut ChromaprintContext;
-    pub fn chromaprint_free(ctx: *mut ChromaprintContext) -> ();
-    pub fn chromaprint_get_algorithm(ctx: *mut ChromaprintContext) -> ChromaprintAlgorithm;
-    pub fn chromaprint_set_option(
+unsafe extern "C" {
+    fn chromaprint_get_version() -> *const ::libc::c_char;
+    fn chromaprint_new(algorithm: ChromaprintAlgorithm) -> *mut ChromaprintContext;
+    fn chromaprint_free(ctx: *mut ChromaprintContext) -> ();
+    fn chromaprint_get_algorithm(ctx: *mut ChromaprintContext) -> ChromaprintAlgorithm;
+
+    #[allow(unused)]
+    fn chromaprint_set_option(
         ctx: *mut ChromaprintContext,
         name: *const ::libc::c_char,
         value: ::libc::c_int,
     ) -> ::libc::c_int;
-    pub fn chromaprint_start(
+
+    fn chromaprint_start(
         ctx: *mut ChromaprintContext,
         sample_rate: ::libc::c_int,
         num_channels: ::libc::c_int,
     ) -> ::libc::c_int;
-    pub fn chromaprint_feed(
+
+    fn chromaprint_feed(
         ctx: *mut ChromaprintContext,
         data: *const ::libc::c_void,
         size: ::libc::c_int,
     ) -> ::libc::c_int;
-    pub fn chromaprint_finish(ctx: *mut ChromaprintContext) -> ::libc::c_int;
-    pub fn chromaprint_get_fingerprint(
+
+    fn chromaprint_finish(ctx: *mut ChromaprintContext) -> ::libc::c_int;
+
+    fn chromaprint_get_fingerprint(
         ctx: *mut ChromaprintContext,
         fingerprint: *mut *mut ::libc::c_char,
     ) -> ::libc::c_int;
-    pub fn chromaprint_get_raw_fingerprint(
+
+    fn chromaprint_get_raw_fingerprint(
         ctx: *mut ChromaprintContext,
         fingerprint: *mut *mut ::libc::c_void,
         size: *mut ::libc::c_int,
     ) -> ::libc::c_int;
-    pub fn chromaprint_encode_fingerprint(
+
+    fn chromaprint_encode_fingerprint(
         fp: *const ::libc::c_void,
         size: ::libc::c_int,
         algorithm: ::libc::c_int,
@@ -50,7 +55,8 @@ extern "C" {
         encoded_size: *mut ::libc::c_int,
         base64: ::libc::c_int,
     ) -> ::libc::c_int;
-    pub fn chromaprint_decode_fingerprint(
+
+    fn chromaprint_decode_fingerprint(
         encoded_fp: *const ::libc::c_void,
         encoded_size: ::libc::c_int,
         fp: *mut *mut ::libc::c_void,
@@ -58,7 +64,8 @@ extern "C" {
         algorithm: *mut ::libc::c_int,
         base64: ::libc::c_int,
     ) -> ::libc::c_int;
-    pub fn chromaprint_dealloc(ptr: *mut ::libc::c_void) -> ();
+
+    fn chromaprint_dealloc(ptr: *mut ::libc::c_void) -> ();
 }
 
 pub struct Chromaprint {
@@ -67,10 +74,8 @@ pub struct Chromaprint {
 
 impl Chromaprint {
     pub fn new() -> Chromaprint {
-        unsafe {
-            Chromaprint {
-                ctx: chromaprint_new(CHROMAPRINT_ALGORITHM_DEFAULT),
-            }
+        Chromaprint {
+            ctx: unsafe { chromaprint_new(CHROMAPRINT_ALGORITHM_DEFAULT) },
         }
     }
 
