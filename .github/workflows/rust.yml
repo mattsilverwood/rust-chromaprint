@@ -14,9 +14,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
-      - name: Install dependencies.
-        run: apt install libchromaprint-dev
+      - name: Checkout repository.
+        uses: actions/checkout@v4
+      - name: Update system packages.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libchromaprint-dev
       - name: Build
         run: cargo build --verbose
       - name: Run tests
